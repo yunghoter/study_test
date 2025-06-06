@@ -1,0 +1,72 @@
+# Цей workflow збирає Java проект з Maven та кешує/відновлює залежності для покращення швидкості виконання
+# Для отримання додаткової інформації дивіться: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+name: Maven Build Check
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches: ['*']
+
+jobs:
+  build:
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: write
+    
+    runs-on: ubuntu-latest
+
+    services:
+      # Додавання контейнера PostgreSQL для інтеграційних тестів
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: college_db_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Налаштування JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+     
+    - name: Запуск модульних тестів
+      run: mvn clean compile test
+      env:
+        SPRING_PROFILES_ACTIVE: test
+
+    # Запуск інтеграційних тестів
+    - name: Запуск інтеграційних тестів
+      run: mvn verify -DskipUnitTests
+      env:
+        DB_PASSWORD: postgres
+        SPRING_PROFILES_ACTIVE: test
+
+    # Генерація звітів
+    - name: Генерація звітів
+      run: mvn site
+
+    # Завантаження звітів про тести
+    - name: Генерація і завантаження звітів
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports
+        path: |
+          target/site/
