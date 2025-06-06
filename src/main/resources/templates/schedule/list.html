@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Список занять</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Розклад занять</h2>
+            <a href="/schedule/add" class="btn btn-primary">Додати нове заняття</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Студент</th>
+                        <th>Курс</th>
+                        <th>Ім'я викладача</th>
+                        <th>Прізвище викладача</th>
+                        <th>Кафедра</th>
+                        <th>Аудиторія</th>
+                        <th>Кількість місць</th>
+                        <th>Семестр</th>
+                        <th>Рік</th>
+                        <th>Початок заняття</th>
+                        <th>Закінчення заняття</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="schedule : ${schedules}">
+                        <td th:text="${schedule.studentFirstName + ' ' + schedule.studentLastName}"></td>
+                        <td th:text="${schedule.courseName}"></td>
+                        <td th:text="${schedule.teacherFirstName}"></td>
+                        <td th:text="${schedule.teacherLastName}"></td>
+                        <td th:text="${schedule.departmentName}"></td>
+                        <td th:text="${schedule.roomNumber}"></td>
+                        <td th:text="${schedule.roomCapacity}"></td>
+                        <td th:text="${schedule.semester}"></td>
+                        <td th:text="${schedule.year}"></td>
+                        <td th:text="${schedule.startTime}"></td>
+                        <td th:text="${schedule.endTime}"></td>
+                        <td>
+                            <!-- Кнопка видалення запису -->
+                            <form th:action="@{/schedule/delete-enrollment}" method="post" style="display: inline;">
+                                <input type="hidden" name="studentName" th:value="${schedule.studentFirstName + ' ' + schedule.studentLastName}" />
+                                <input type="hidden" name="courseName" th:value="${schedule.courseName}" />
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('Ви впевнені, що хочете видалити цей запис?')">
+                                    <i class="bi bi-trash"></i> Видалити
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Додавання іконок Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</body>
+</html>
